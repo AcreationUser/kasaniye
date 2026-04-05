@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Касания — Спектры</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+:root {
+  --bg:      #0f101a;
+  --surface: #171923;
+  --surface2:#1d2030;
+  --border:  #272b3d;
+  --border2: #333754;
+  --text:    #e8e3da;
+  --muted:   #7a7590;
+  --dim:     #454060;
+  --accent:  #c4a8be;
+  --c-wrote:      #93c29e;
+  --c-finished:   #aed494;
+  --c-structured: #85b0c8;
+  --c-moved:      #a89dc8;
+  --c-edited:     #cbb88a;
+  --c-thought:    #b8a898;
+  --c-implanted:  #c49ab8;
+  --c-merged:     #88b8b0;
+  --c-polished:   #a8b8d0;
+}
+
+body {
+  background: var(--bg); color: var(--text);
+  font-family: 'Jost', sans-serif; font-weight: 300;
+  min-height: 100vh; padding-bottom: 90px;
+}
+
+header { padding: 26px 20px 16px; border-bottom: 1px solid var(--border); }
+.app-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 30px; font-weight: 400;
+  letter-spacing: 0.03em; color: #ece7de;
+}
+.app-sub {
+  font-size: 10px; font-weight: 200;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--muted); margin-top: 4px;
+}
+
+.nav-tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); }
+.nav-tab {
+  flex: 1; padding: 11px 4px; background: none; border: none;
+  font-family: 'Jost', sans-serif; font-size: 10px; font-weight: 300;
+  letter-spacing: 0.13em; text-transform: uppercase; color: var(--muted);
+  cursor: pointer; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s;
+}
+.nav-tab.active { color: var(--text); border-bottom-color: var(--accent); }
+
+#statsBar {
+  padding: 9px 20px; border-bottom: 1px solid var(--border);
+  display: flex; gap: 16px; font-size: 11px; font-weight: 300;
+  letter-spacing: 0.06em; color: var(--muted); min-height: 35px; align-items: center;
+}
+#statsBar b { color: var(--text); font-weight: 400; }
+
+#formWrap {
+  display: none; padding: 18px 20px 22px;
+  border-bottom: 1px solid var(--border); background: var(--surface);
+  animation: slideDown 0.16s ease;
+}
+#formWrap.open { display: block; }
+@keyframes slideDown { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:translateY(0); } }
+
+.frow { margin-bottom: 13px; }
+.frow:last-child { margin-bottom: 0; }
+label {
+  display: block; font-size: 10px; font-weight: 400;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 7px;
+}
+input, select, textarea {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text); font-family: 'Jost', sans-serif;
+  font-weight: 300; font-size: 15px; padding: 10px 12px; outline: none;
+  -webkit-appearance: none; appearance: none; transition: border-color 0.15s;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--border2); }
+input.err { border-color: #7a4444 !important; }
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23545165'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center; padding-right: 30px;
+}
+select option { background: #181a22; }
+textarea { resize: none; height: 68px; font-size: 14px; line-height: 1.55; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.chip {
+  padding: 6px 13px; border-radius: 20px; border: 1px solid var(--border2);
+  background: transparent; color: var(--muted); font-family: 'Jost', sans-serif;
+  font-size: 12px; font-weight: 300; letter-spacing: 0.05em;
+  cursor: pointer; transition: all 0.13s; white-space: nowrap;
+}
+.chip.active-wrote      { color: var(--c-wrote);      border-color: var(--c-wrote);      background: rgba(147,194,158,0.1); }
+.chip.active-finished   { color: var(--c-finished);   border-color: var(--c-finished);   background: rgba(174,212,148,0.1); }
+.chip.active-structured { color: var(--c-structured); border-color: var(--c-structured); background: rgba(133,176,200,0.1); }
+.chip.active-moved      { color: var(--c-moved);      border-color: var(--c-moved);      background: rgba(168,157,200,0.1); }
+.chip.active-edited     { color: var(--c-edited);     border-color: var(--c-edited);     background: rgba(203,184,138,0.1); }
+.chip.active-thought    { color: var(--c-thought);    border-color: var(--c-thought);    background: rgba(184,168,152,0.1); }
+.chip.active-implanted  { color: var(--c-implanted);  border-color: var(--c-implanted);  background: rgba(196,154,184,0.1); }
+.chip.active-merged     { color: var(--c-merged);     border-color: var(--c-merged);     background: rgba(136,184,176,0.1); }
+.chip.active-polished   { color: var(--c-polished);   border-color: var(--c-polished);   background: rgba(168,184,208,0.1); }
+
+.btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.btn-submit, .btn-cancel {
+  width: 100%; padding: 12px; border-radius: 6px;
+  font-family: 'Jost', sans-serif; font-weight: 300;
+  font-size: 12px; letter-spacing: 0.13em; text-transform: uppercase; cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-submit { background: transparent; border: 1px solid var(--dim); color: var(--accent); }
+.btn-submit:active { background: var(--surface2); }
+.btn-cancel { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+.btn-cancel:active { background: var(--surface2); }
+
+.fab {
+  position: fixed; bottom: 22px; right: 20px; width: 52px; height: 52px;
+  background: var(--surface2); border: 1px solid var(--dim); border-radius: 50%;
+  color: var(--accent); font-size: 26px; line-height: 50px; text-align: center;
+  cursor: pointer; box-shadow: 0 4px 22px rgba(0,0,0,0.45); z-index: 20;
+  user-select: none; transition: transform 0.15s;
+}
+.fab:active { transform: scale(0.92); }
+
+.entries { padding: 0 20px; }
+.month-group { margin-top: 20px; }
+.month-label {
+  font-size: 10px; font-weight: 400; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--muted);
+  padding-bottom: 10px; border-bottom: 1px solid var(--border);
+}
+.entry-card { padding: 13px 0; border-bottom: 1px solid var(--border); position: relative; }
+.entry-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.badge { font-size: 10px; font-weight: 300; letter-spacing: 0.07em; padding: 2px 9px; border-radius: 20px; }
+.badge-wrote      { color: var(--c-wrote);      border: 1px solid rgba(147,194,158,0.35); }
+.badge-finished   { color: var(--c-finished);   border: 1px solid rgba(174,212,148,0.35); }
+.badge-structured { color: var(--c-structured); border: 1px solid rgba(133,176,200,0.35); }
+.badge-moved      { color: var(--c-moved);      border: 1px solid rgba(168,157,200,0.35); }
+.badge-edited     { color: var(--c-edited);     border: 1px solid rgba(203,184,138,0.35); }
+.badge-thought    { color: var(--c-thought);    border: 1px solid rgba(184,168,152,0.35); }
+.badge-implanted  { color: var(--c-implanted);  border: 1px solid rgba(196,154,184,0.35); }
+.badge-merged     { color: var(--c-merged);     border: 1px solid rgba(136,184,176,0.35); }
+.badge-polished   { color: var(--c-polished);   border: 1px solid rgba(168,184,208,0.35); }
+.entry-date-sm { font-size: 11px; font-weight: 200; color: var(--muted); }
+.entry-subtype { font-size: 10px; font-weight: 300; letter-spacing: 0.13em; text-transform: uppercase; color: #8c88a0; margin-bottom: 1px; }
+.entry-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; color: #ede8df; line-height: 1.25; }
+.entry-note { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 15px; color: #7e7a90; line-height: 1.55; margin-top: 5px; }
+.entry-actions { position: absolute; top: 13px; right: 0; display: flex; gap: 6px; }
+.entry-btn { background: none; border: none; color: var(--dim); font-size: 16px; cursor: pointer; padding: 3px 2px; line-height: 1; transition: color 0.15s; }
+.entry-btn.edit:active { color: var(--accent); }
+.btn-delete {
+  width: 100%; margin-top: 8px; padding: 9px;
+  background: transparent; border: 1px solid rgba(140,60,60,0.35);
+  border-radius: 6px; color: #8c5050;
+  font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 300;
+  letter-spacing: 0.13em; text-transform: uppercase; cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.btn-delete:active { background: rgba(140,60,60,0.15); border-color: rgba(140,60,60,0.6); }
+
+.inline-edit {
+  padding: 12px 14px; background: var(--surface2);
+  border-radius: 8px; margin-top: 6px; border: 1px solid var(--border2);
+}
+.inline-edit .chips { margin-bottom: 10px; }
+.inline-edit input, .inline-edit textarea { font-size: 14px; margin-bottom: 8px; }
+.inline-edit .btn-submit, .inline-edit .btn-cancel { font-size: 11px; padding: 9px; }
+
+.empty { padding: 70px 20px; text-align: center; color: #3a3750; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 18px; line-height: 1.8; }
+
+.backup-panel {
+  margin-top: 20px;
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+}
+.backup-label {
+  font-size: 10px; font-weight: 300; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+}
+.backup-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.btn-backup {
+  padding: 10px; background: transparent;
+  border: 1px solid var(--border2); border-radius: 6px;
+  color: var(--muted); font-family: 'Jost', sans-serif;
+  font-size: 11px; font-weight: 300; letter-spacing: 0.11em;
+  text-transform: uppercase; cursor: pointer; transition: border-color 0.15s, color 0.15s;
+}
+.btn-backup:active { border-color: var(--accent); color: var(--accent); }
+.backup-msg {
+  margin-top: 8px; font-size: 11px; font-weight: 200;
+  color: var(--muted); letter-spacing: 0.05em; min-height: 16px;
+  font-style: italic;
+}
+
+.total-card {
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 16px 18px; margin-bottom: 16px;
+}
+.total-card-label { font-size: 10px; font-weight: 300; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.total-card-num {
+  font-family: 'Jost', sans-serif; font-size: 32px; font-weight: 200;
+  color: var(--accent); font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
+}
+.total-card-words { font-size: 12px; font-weight: 200; color: var(--muted); margin-top: 3px; letter-spacing: 0.05em; }
+
+.tome-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tome-card { border-radius: 10px; padding: 14px 16px 16px; border: 1px solid transparent; position: relative; min-height: 100px; }
+.tome-1 { background: rgba( 90,140,210,0.10); border-color: rgba( 90,140,210,0.22); }
+.tome-2 { background: rgba( 90,175,115,0.10); border-color: rgba( 90,175,115,0.22); }
+.tome-3 { background: rgba(190,148, 80,0.10); border-color: rgba(190,148, 80,0.22); }
+.tome-4 { background: rgba(210, 90, 90,0.10); border-color: rgba(210, 90, 90,0.22); }
+.tome-5 { background: rgba(165, 90,190,0.10); border-color: rgba(165, 90,190,0.22); }
+.tome-6 { background: rgba(130,130,140,0.10); border-color: rgba(130,130,140,0.22); }
+.tome-7 { background: rgba(165,165, 90,0.10); border-color: rgba(165,165, 90,0.22); }
+.tome-card-label { font-size: 11px; font-weight: 300; letter-spacing: 0.07em; color: #9090a8; margin-bottom: 8px; }
+.tome-card-num {
+  font-family: 'Jost', sans-serif; font-size: 22px; font-weight: 300;
+  color: #ede8df; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; line-height: 1;
+}
+.tome-card-words { font-size: 11px; font-weight: 200; color: var(--muted); margin-top: 3px; }
+.tome-dash { color: var(--dim); font-size: 18px; }
+.tome-edit-btn {
+  position: absolute; top: 10px; right: 11px;
+  background: none; border: none; color: var(--dim);
+  font-size: 12px; font-family: 'Jost', sans-serif;
+  font-weight: 300; letter-spacing: 0.06em; cursor: pointer; transition: color 0.15s;
+}
+.tome-edit-btn:active { color: var(--accent); }
+.tome-input-form { margin-top: 10px; }
+.tome-input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 8px; }
+.tome-input-row input { font-size: 14px; padding: 8px 10px; }
+.tome-save-btn {
+  width: 100%; padding: 9px; background: transparent;
+  border: 1px solid var(--dim); border-radius: 6px; color: var(--accent);
+  font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 300;
+  letter-spacing: 0.13em; text-transform: uppercase; cursor: pointer;
+}
+.tome-save-btn:active { background: var(--surface2); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="app-title">Касания</div>
+  <div class="app-sub">Спектры · журнал работы</div>
+</header>
+
+<div class="nav-tabs">
+  <button class="nav-tab active" id="tabJournal" onclick="switchTab('journal')">Журнал</button>
+  <button class="nav-tab"        id="tabTomes"   onclick="switchTab('tomes')">Томá</button>
+</div>
+
+<div id="journalView">
+  <div id="statsBar"></div>
+
+  <div id="formWrap">
+    <div class="frow">
+      <label>Дата</label>
+      <input type="date" id="fDate">
+    </div>
+    <div class="row2">
+      <div class="frow">
+        <label>Элемент</label>
+        <select id="fType">
+          <option>Том</option><option selected>Пакт</option><option>Манифест</option>
+          <option>Лирика</option><option>Интермеццо</option><option>Каприччио</option>
+          <option>Концепт</option><option>Другое</option>
+        </select>
+      </div>
+      <div class="frow">
+        <label>Название / №</label>
+        <input type="text" id="fName" placeholder="III, Тишина…">
+      </div>
+    </div>
+    <div class="frow">
+      <label>Тип работы</label>
+      <div class="chips" id="workChips">
+        <button class="chip active-wrote" data-val="wrote"      onclick="selectChip(this,'workChips','fWork')">написала</button>
+        <button class="chip"             data-val="finished"   onclick="selectChip(this,'workChips','fWork')">дописала</button>
+        <button class="chip"             data-val="structured" onclick="selectChip(this,'workChips','fWork')">структурно</button>
+        <button class="chip"             data-val="moved"      onclick="selectChip(this,'workChips','fWork')">переместила</button>
+        <button class="chip"             data-val="edited"     onclick="selectChip(this,'workChips','fWork')">редактировала</button>
+        <button class="chip"             data-val="thought"    onclick="selectChip(this,'workChips','fWork')">обдумывала</button>
+        <button class="chip"             data-val="implanted"  onclick="selectChip(this,'workChips','fWork')">вживила</button>
+        <button class="chip"             data-val="merged"     onclick="selectChip(this,'workChips','fWork')">соединила</button>
+        <button class="chip"             data-val="polished"   onclick="selectChip(this,'workChips','fWork')">шлифовала</button>
+      </div>
+      <input type="hidden" id="fWork" value="wrote">
+    </div>
+    <div class="frow">
+      <label>Заметка о сдвиге</label>
+      <textarea id="fNote" placeholder="что именно изменилось, что сдвинулось…"></textarea>
+    </div>
+    <div class="frow btn-row">
+      <button class="btn-submit" onclick="addEntry()">Зафиксировать</button>
+      <button class="btn-cancel" onclick="closeForm()">Отмена</button>
+    </div>
+  </div>
+
+  <div id="entriesWrap"></div>
+</div>
+
+<div id="tomesView">
+  <div class="total-card">
+    <div class="total-card-label">всего по циклу</div>
+    <div class="total-card-num" id="totalChars">—</div>
+    <div class="total-card-words" id="totalWords"></div>
+    <div class="total-card-words" id="totalAl" style="opacity:0.6;"></div>
+  </div>
+  <div class="tome-grid" id="tomeGrid"></div>
+
+  <div class="backup-panel">
+    <div class="backup-label">Резервная копия</div>
+    <div class="backup-row">
+      <button class="btn-backup" onclick="exportBackup()">↓ Экспорт</button>
+      <button class="btn-backup" onclick="document.getElementById('importFile').click()">↑ Импорт</button>
+    </div>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
+    <div class="backup-msg" id="backupMsg"></div>
+  </div>
+</div>
+
+<div class="fab" id="fab" onclick="toggleForm()">+</div>
+
+<script>
+const KEY      = 'kasaniya-v1';
+const TOME_KEY = 'kasaniya-tomes-v1';
+
+const LABELS = { wrote:'написала', finished:'дописала', structured:'структурно', moved:'переместила', edited:'редактировала', thought:'обдумывала', implanted:'вживила', merged:'соединила', polished:'шлифовала' };
+const WORK_VALS = ['wrote','finished','structured','moved','edited','thought','implanted','merged','polished'];
+const MONTHS_GEN = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const MONTHS_NOM = ['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
+const TOME_NAMES = ['I','II','III','IV','V','VI','VII'];
+const TYPE_OPTS  = ['Том','Пакт','Манифест','Лирика','Интермеццо','Каприччио','Концепт','Другое'];
+
+let entries = [];
+let tomes   = TOME_NAMES.map(n => ({ num: n, chars: 0, words: 0 }));
+let formOpen     = false;
+let editingEntry = null;
+
+// ── Storage ──
+const store = {
+  async load() {
+    try { if (window.storage) { const r = await window.storage.get(KEY); if (r) return JSON.parse(r.value); } } catch {}
+    try { const r = localStorage.getItem(KEY); if (r) return JSON.parse(r); } catch {}
+    return [];
+  },
+  save(d) {
+    try { if (window.storage) { window.storage.set(KEY, JSON.stringify(d)); return; } } catch {}
+    try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {}
+  },
+  async loadTomes() {
+    try { if (window.storage) { const r = await window.storage.get(TOME_KEY); if (r) return JSON.parse(r.value); } } catch {}
+    try { const r = localStorage.getItem(TOME_KEY); if (r) return JSON.parse(r); } catch {}
+    return null;
+  },
+  saveTomes(d) {
+    try { if (window.storage) { window.storage.set(TOME_KEY, JSON.stringify(d)); return; } } catch {}
+    try { localStorage.setItem(TOME_KEY, JSON.stringify(d)); } catch {}
+  }
+};
+
+// ── Tabs ──
+function switchTab(tab) {
+  const isJ = tab === 'journal';
+  document.getElementById('journalView').style.display = isJ ? 'block' : 'none';
+  document.getElementById('tomesView').style.display   = isJ ? 'none' : 'block';
+  document.getElementById('tabJournal').classList.toggle('active', isJ);
+  document.getElementById('tabTomes').classList.toggle('active', !isJ);
+  if (!isJ) { renderTomes(); closeForm(); }
+}
+
+// ── Chips helper ──
+function selectChip(el, groupId, hiddenId) {
+  document.querySelectorAll(`#${groupId} .chip`).forEach(c => c.className = 'chip');
+  const val = el.dataset.val;
+  el.className = `chip active-${val}`;
+  document.getElementById(hiddenId).value = val;
+}
+function setChips(groupId, hiddenId, val) {
+  document.querySelectorAll(`#${groupId} .chip`).forEach(c => {
+    c.className = c.dataset.val === val ? `chip active-${val}` : 'chip';
+  });
+  document.getElementById(hiddenId).value = val;
+}
+
+// ── Form ──
+function toggleForm() { formOpen ? closeForm() : openForm(); }
+function openForm(prefill) {
+  formOpen = true; editingEntry = null;
+  document.getElementById('formWrap').classList.add('open');
+  document.getElementById('fab').textContent = '×';
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('fDate').value = prefill ? prefill.date : today;
+  document.getElementById('fType').value = prefill ? prefill.type : 'Пакт';
+  document.getElementById('fName').value = prefill ? prefill.name : '';
+  document.getElementById('fNote').value = prefill ? prefill.note : '';
+  setChips('workChips', 'fWork', prefill ? prefill.work : 'wrote');
+  if (!prefill) setTimeout(() => document.getElementById('fName').focus(), 80);
+}
+function closeForm() {
+  formOpen = false;
+  document.getElementById('formWrap').classList.remove('open');
+  document.getElementById('fab').textContent = '+';
+}
+
+// ── CRUD ──
+function addEntry() {
+  const date = document.getElementById('fDate').value;
+  const name = document.getElementById('fName').value.trim();
+  if (!date) { shake('fDate'); return; }
+  if (!name) { shake('fName'); return; }
+  entries.unshift({ id: Date.now(), date, type: document.getElementById('fType').value, name, work: document.getElementById('fWork').value, note: document.getElementById('fNote').value.trim() });
+  store.save(entries);
+  render();
+  closeForm();
+}
+function shake(id) {
+  const el = document.getElementById(id);
+  el.classList.add('err');
+  setTimeout(() => el.classList.remove('err'), 1200);
+}
+function delEntry(id) { entries = entries.filter(e => e.id !== id); store.save(entries); render(); }
+function startEdit(id) { editingEntry = id; renderEntries(); }
+function cancelEdit()  { editingEntry = null; renderEntries(); }
+function saveEdit(id) {
+  const e = entries.find(x => x.id === id);
+  const name = document.getElementById(`eName${id}`).value.trim();
+  if (!name) { shake(`eName${id}`); return; }
+  e.date = document.getElementById(`eDate${id}`).value || e.date;
+  e.type = document.getElementById(`eType${id}`).value;
+  e.name = name;
+  e.work = document.getElementById(`eWork${id}`).value;
+  e.note = document.getElementById(`eNote${id}`).value.trim();
+  store.save(entries);
+  editingEntry = null;
+  render();
+}
+
+// ── Render journal ──
+function render() { renderStats(); renderEntries(); }
+
+function renderStats() {
+  const el = document.getElementById('statsBar');
+  if (!entries.length) { el.innerHTML = ''; return; }
+  const now = new Date();
+  const thisM = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const thisMonth = entries.filter(e => e.date.startsWith(thisM)).length;
+  el.innerHTML = `<span><b>${entries.length}</b> касаний</span><span><b>${new Set(entries.map(e=>`${e.type}·${e.name.toLowerCase()}`)).size}</b> элементов</span><span>этот месяц: <b>${thisMonth}</b></span>`;
+}
+
+function dateShort(s) { const [,m,d]=s.split('-'); return `${parseInt(d)} ${MONTHS_GEN[parseInt(m)-1]}`; }
+function monthKey(s) { return s.slice(0,7); }
+function monthTitle(k) { const [y,m]=k.split('-'); return `${MONTHS_NOM[parseInt(m)-1]} ${y}`; }
+function chipsHtml(groupId, hiddenId, val) {
+  return WORK_VALS.map(v =>
+    `<button class="chip${val===v?' active-'+v:''}" data-val="${v}" onclick="selectChip(this,'${groupId}','${hiddenId}')">${LABELS[v]}</button>`
+  ).join('');
+}
+
+function renderEntries() {
+  const wrap = document.getElementById('entriesWrap');
+  if (!entries.length) { wrap.innerHTML = `<div class="empty">Здесь будет след работы.<br>Каждое касание — запись.</div>`; return; }
+  const groups = new Map();
+  for (const e of entries) { const k=monthKey(e.date); if (!groups.has(k)) groups.set(k,[]); groups.get(k).push(e); }
+  let html = '<div class="entries">';
+  for (const [k, list] of groups) {
+    html += `<div class="month-group"><div class="month-label">${monthTitle(k)}</div>`;
+    for (const e of list) {
+      if (editingEntry === e.id) {
+        html += `<div class="entry-card"><div class="inline-edit">
+          <div class="chips" id="eChips${e.id}">${chipsHtml('eChips'+e.id,'eWork'+e.id,e.work)}</div>
+          <input type="hidden" id="eWork${e.id}" value="${e.work}">
+          <div class="row2" style="margin-bottom:8px;">
+            <div><label style="margin-bottom:4px;">Дата</label><input type="date" id="eDate${e.id}" value="${e.date}"></div>
+            <div><label style="margin-bottom:4px;">Элемент</label><select id="eType${e.id}">${TYPE_OPTS.map(t=>`<option${t===e.type?' selected':''}>${t}</option>`).join('')}</select></div>
+          </div>
+          <input type="text" id="eName${e.id}" value="${e.name.replace(/"/g,'&quot;')}" placeholder="Название / №">
+          <textarea id="eNote${e.id}" placeholder="заметка о сдвиге…">${e.note}</textarea>
+          <div class="btn-row"><button class="btn-submit" onclick="saveEdit(${e.id})">Сохранить</button><button class="btn-cancel" onclick="cancelEdit()">Отмена</button></div>
+          <button class="btn-delete" onclick="delEntry(${e.id})">удалить запись</button>
+        </div></div>`;
+      } else {
+        html += `<div class="entry-card">
+          <div class="entry-actions">
+            <button class="entry-btn edit" onclick="startEdit(${e.id})">✎</button>
+          </div>
+          <div class="entry-head"><span class="badge badge-${e.work}">${LABELS[e.work]}</span><span class="entry-date-sm">${dateShort(e.date)}</span></div>
+          <div class="entry-subtype">${e.type}</div>
+          <div class="entry-name">${e.name}</div>
+          ${e.note?`<div class="entry-note">${e.note}</div>`:''}
+        </div>`;
+      }
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+// ── Render tomes ──
+function fmt(n) { return n ? n.toLocaleString('ru-RU') : null; }
+
+function renderTomes() {
+  const tc = tomes.reduce((a,t)=>a+(t.chars||0),0);
+  const tw = tomes.reduce((a,t)=>a+(t.words||0),0);
+  document.getElementById('totalChars').textContent = fmt(tc) || '—';
+  document.getElementById('totalWords').textContent = tw ? fmt(tw)+'\u00a0слов' : '';
+  const alEl = document.getElementById('totalAl');
+  alEl.textContent = tc ? (tc/40000).toFixed(2)+'\u00a0а.л.' : '';
+  document.getElementById('tomeGrid').innerHTML = tomes.map((t,i) => `
+    <div class="tome-card tome-${i+1}" id="tomeCard${i}">
+      <button class="tome-edit-btn" onclick="startEditTome(${i})">ред.</button>
+      <div class="tome-card-label">Том ${t.num}</div>
+      <div class="tome-card-num">${fmt(t.chars)||'<span class="tome-dash">—</span>'}</div>
+      ${t.words?`<div class="tome-card-words">${fmt(t.words)}\u00a0слов</div>`:''}
+      ${t.chars?`<div class="tome-card-words" style="margin-top:2px;opacity:0.7;">${(t.chars/40000).toFixed(2)}\u00a0а.л.</div>`:''}
+    </div>`).join('');
+}
+
+function startEditTome(i) {
+  const t = tomes[i];
+  document.getElementById(`tomeCard${i}`).innerHTML = `
+    <div class="tome-card-label">Том ${t.num}</div>
+    <div class="tome-input-form">
+      <div class="tome-input-row">
+        <div><label style="margin-bottom:3px;">символов</label><input id="tc${i}" type="number" value="${t.chars||''}" placeholder="0"></div>
+        <div><label style="margin-bottom:3px;">слов</label><input id="tw${i}" type="number" value="${t.words||''}" placeholder="0"></div>
+      </div>
+      <button class="tome-save-btn" onclick="saveTome(${i})">Сохранить</button>
+    </div>`;
+}
+
+function saveTome(i) {
+  tomes[i].chars = parseInt(document.getElementById(`tc${i}`).value)||0;
+  tomes[i].words = parseInt(document.getElementById(`tw${i}`).value)||0;
+  store.saveTomes(tomes);
+  renderTomes();
+}
+
+// ── Backup ──
+function exportBackup() {
+  const data = { entries, tomes, exported: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const date = new Date().toISOString().slice(0,10);
+  a.href = url; a.download = `kasaniya-${date}.json`; a.click();
+  URL.revokeObjectURL(url);
+  showBackupMsg('Экспорт выполнен');
+}
+function importBackup(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!data.entries || !data.tomes) throw new Error();
+      entries = data.entries;
+      tomes   = data.tomes;
+      store.save(entries);
+      store.saveTomes(tomes);
+      render();
+      renderTomes();
+      showBackupMsg(`Загружено: ${entries.length} касаний`);
+    } catch { showBackupMsg('Ошибка — файл не распознан'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+function showBackupMsg(text) {
+  const el = document.getElementById('backupMsg');
+  if (!el) return;
+  el.textContent = text;
+  setTimeout(() => { el.textContent = ''; }, 3000);
+}
+
+// ── Init ──
+Promise.all([store.load(), store.loadTomes()]).then(([ed, td]) => {
+  entries = ed;
+  if (td) tomes = td;
+  render();
+});
+</script>
+</body>
+</html>
