@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Касания — Спектры</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230f101a'/%3E%3Cpath d='M22 5 C22 5 7 11 8 25 L10.5 22 C10.5 22 13 13 22 5Z' fill='%23c4a8be'/%3E%3Cpath d='M8 25.5 C9 22 11 18 14.5 15' stroke='%23c4a8be' stroke-width='1.4' stroke-linecap='round' fill='none' opacity='0.6'/%3E%3Cpath d='M12 28 L9 25' stroke='%23c4a8be' stroke-width='1.2' stroke-linecap='round' opacity='0.5'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='38' fill='%230f101a'/%3E%3Cpath d='M130 28 C130 28 40 62 44 140 L58 124 C58 124 74 72 130 28Z' fill='%23c4a8be'/%3E%3Cpath d='M44 142 C50 122 62 100 82 84' stroke='%23c4a8be' stroke-width='7' stroke-linecap='round' fill='none' opacity='0.6'/%3E%3Cpath d='M66 158 L48 140' stroke='%23c4a8be' stroke-width='6' stroke-linecap='round' opacity='0.5'/%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
 <style>
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -38,13 +40,11 @@ body {
 header { padding: 26px 20px 16px; border-bottom: 1px solid var(--border); }
 .app-title {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 30px; font-weight: 400;
-  letter-spacing: 0.03em; color: #ece7de;
+  font-size: 30px; font-weight: 400; letter-spacing: 0.03em; color: #ece7de;
 }
 .app-sub {
-  font-size: 10px; font-weight: 200;
-  letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--muted); margin-top: 4px;
+  font-size: 10px; font-weight: 200; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--muted); margin-top: 4px;
 }
 
 .nav-tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); }
@@ -56,13 +56,29 @@ header { padding: 26px 20px 16px; border-bottom: 1px solid var(--border); }
 }
 .nav-tab.active { color: var(--text); border-bottom-color: var(--accent); }
 
-#statsBar {
-  padding: 9px 20px; border-bottom: 1px solid var(--border);
-  display: flex; gap: 16px; font-size: 11px; font-weight: 300;
-  letter-spacing: 0.06em; color: var(--muted); min-height: 35px; align-items: center;
+/* Stats + month filter */
+#statsBar { padding: 8px 20px 0; border-bottom: 1px solid var(--border); }
+.stats-top {
+  display: flex; align-items: center; gap: 14px;
+  font-size: 11px; font-weight: 300; letter-spacing: 0.06em;
+  color: var(--muted); padding-bottom: 8px;
 }
-#statsBar b { color: var(--text); font-weight: 400; }
+.stats-top b { color: var(--text); font-weight: 400; }
+.month-filter {
+  display: flex; gap: 6px; overflow-x: auto; padding-bottom: 10px;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.month-filter::-webkit-scrollbar { display: none; }
+.mchip {
+  flex-shrink: 0; padding: 4px 12px; border-radius: 20px;
+  border: 1px solid var(--border2); background: transparent; color: var(--muted);
+  font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 300;
+  letter-spacing: 0.05em; cursor: pointer; transition: all 0.13s; white-space: nowrap;
+}
+.mchip.active { color: var(--accent); border-color: var(--accent); background: rgba(196,168,190,0.1); }
+.mchip-count { font-weight: 400; margin-left: 4px; opacity: 0.7; }
 
+/* Form */
 #formWrap {
   display: none; padding: 18px 20px 22px;
   border-bottom: 1px solid var(--border); background: var(--surface);
@@ -91,8 +107,17 @@ select {
 }
 select option { background: #181a22; }
 textarea { resize: none; height: 68px; font-size: 14px; line-height: 1.55; }
-.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.row3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px; }
+
+/* Date row hint */
+.date-hint {
+  font-size: 11px; font-weight: 200; color: var(--muted);
+  margin-top: 5px; letter-spacing: 0.03em; font-style: italic;
+}
+
+/* Chips */
 .chips { display: flex; flex-wrap: wrap; gap: 7px; }
 .chip {
   padding: 6px 13px; border-radius: 20px; border: 1px solid var(--border2);
@@ -110,18 +135,26 @@ textarea { resize: none; height: 68px; font-size: 14px; line-height: 1.55; }
 .chip.active-merged     { color: var(--c-merged);     border-color: var(--c-merged);     background: rgba(136,184,176,0.1); }
 .chip.active-polished   { color: var(--c-polished);   border-color: var(--c-polished);   background: rgba(168,184,208,0.1); }
 
+/* Buttons */
 .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .btn-submit, .btn-cancel {
   width: 100%; padding: 12px; border-radius: 6px;
   font-family: 'Jost', sans-serif; font-weight: 300;
-  font-size: 12px; letter-spacing: 0.13em; text-transform: uppercase; cursor: pointer;
-  transition: background 0.15s;
+  font-size: 12px; letter-spacing: 0.13em; text-transform: uppercase; cursor: pointer; transition: background 0.15s;
 }
 .btn-submit { background: transparent; border: 1px solid var(--dim); color: var(--accent); }
 .btn-submit:active { background: var(--surface2); }
 .btn-cancel { background: transparent; border: 1px solid var(--border); color: var(--muted); }
 .btn-cancel:active { background: var(--surface2); }
+.btn-delete {
+  width: 100%; margin-top: 8px; padding: 9px; background: transparent;
+  border: 1px solid rgba(140,60,60,0.35); border-radius: 6px; color: #8c5050;
+  font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 300;
+  letter-spacing: 0.13em; text-transform: uppercase; cursor: pointer; transition: background 0.15s;
+}
+.btn-delete:active { background: rgba(140,60,60,0.15); }
 
+/* FAB */
 .fab {
   position: fixed; bottom: 22px; right: 20px; width: 52px; height: 52px;
   background: var(--surface2); border: 1px solid var(--dim); border-radius: 50%;
@@ -131,16 +164,19 @@ textarea { resize: none; height: 68px; font-size: 14px; line-height: 1.55; }
 }
 .fab:active { transform: scale(0.92); }
 
+/* Entries */
 .entries { padding: 0 20px; }
 .month-group { margin-top: 20px; }
 .month-label {
-  font-size: 10px; font-weight: 400; letter-spacing: 0.16em;
-  text-transform: uppercase; color: var(--muted);
-  padding-bottom: 10px; border-bottom: 1px solid var(--border);
+  font-size: 10px; font-weight: 400; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--muted); padding-bottom: 10px; border-bottom: 1px solid var(--border);
 }
 .entry-card { padding: 13px 0; border-bottom: 1px solid var(--border); position: relative; }
 .entry-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-.badge { font-size: 10px; font-weight: 300; letter-spacing: 0.07em; padding: 2px 9px; border-radius: 20px; }
+.badge {
+  font-size: 10px; font-weight: 300; letter-spacing: 0.07em;
+  padding: 2px 9px; border-radius: 20px;
+}
 .badge-wrote      { color: var(--c-wrote);      border: 1px solid rgba(147,194,158,0.35); }
 .badge-finished   { color: var(--c-finished);   border: 1px solid rgba(174,212,148,0.35); }
 .badge-structured { color: var(--c-structured); border: 1px solid rgba(133,176,200,0.35); }
@@ -150,66 +186,35 @@ textarea { resize: none; height: 68px; font-size: 14px; line-height: 1.55; }
 .badge-implanted  { color: var(--c-implanted);  border: 1px solid rgba(196,154,184,0.35); }
 .badge-merged     { color: var(--c-merged);     border: 1px solid rgba(136,184,176,0.35); }
 .badge-polished   { color: var(--c-polished);   border: 1px solid rgba(168,184,208,0.35); }
+
 .entry-date-sm { font-size: 11px; font-weight: 200; color: var(--muted); }
 .entry-subtype { font-size: 10px; font-weight: 300; letter-spacing: 0.13em; text-transform: uppercase; color: #8c88a0; margin-bottom: 1px; }
 .entry-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; color: #ede8df; line-height: 1.25; }
 .entry-note { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 15px; color: #7e7a90; line-height: 1.55; margin-top: 5px; }
-.entry-actions { position: absolute; top: 13px; right: 0; display: flex; gap: 6px; }
-.entry-btn { background: none; border: none; color: var(--dim); font-size: 16px; cursor: pointer; padding: 3px 2px; line-height: 1; transition: color 0.15s; }
+.entry-actions { position: absolute; top: 13px; right: 0; }
+.entry-btn { background: none; border: none; color: var(--dim); font-size: 16px; cursor: pointer; padding: 3px 2px; line-height: 1; }
 .entry-btn.edit:active { color: var(--accent); }
-.btn-delete {
-  width: 100%; margin-top: 8px; padding: 9px;
-  background: transparent; border: 1px solid rgba(140,60,60,0.35);
-  border-radius: 6px; color: #8c5050;
-  font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 300;
-  letter-spacing: 0.13em; text-transform: uppercase; cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-}
-.btn-delete:active { background: rgba(140,60,60,0.15); border-color: rgba(140,60,60,0.6); }
 
+/* Inline edit */
 .inline-edit {
   padding: 12px 14px; background: var(--surface2);
   border-radius: 8px; margin-top: 6px; border: 1px solid var(--border2);
 }
 .inline-edit .chips { margin-bottom: 10px; }
-.inline-edit input, .inline-edit textarea { font-size: 14px; margin-bottom: 8px; }
+.inline-edit input, .inline-edit select, .inline-edit textarea { font-size: 14px; margin-bottom: 8px; }
 .inline-edit .btn-submit, .inline-edit .btn-cancel { font-size: 11px; padding: 9px; }
 
 .empty { padding: 70px 20px; text-align: center; color: #3a3750; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 18px; line-height: 1.8; }
 
-.backup-panel {
-  margin-top: 20px;
-  border-top: 1px solid var(--border);
-  padding-top: 18px;
-}
-.backup-label {
-  font-size: 10px; font-weight: 300; letter-spacing: 0.15em;
-  text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
-}
-.backup-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.btn-backup {
-  padding: 10px; background: transparent;
-  border: 1px solid var(--border2); border-radius: 6px;
-  color: var(--muted); font-family: 'Jost', sans-serif;
-  font-size: 11px; font-weight: 300; letter-spacing: 0.11em;
-  text-transform: uppercase; cursor: pointer; transition: border-color 0.15s, color 0.15s;
-}
-.btn-backup:active { border-color: var(--accent); color: var(--accent); }
-.backup-msg {
-  margin-top: 8px; font-size: 11px; font-weight: 200;
-  color: var(--muted); letter-spacing: 0.05em; min-height: 16px;
-  font-style: italic;
-}
+/* Tomes */
+#tomesView { display: none; }
 
 .total-card {
   background: var(--surface2); border: 1px solid var(--border2);
   border-radius: 10px; padding: 16px 18px; margin-bottom: 16px;
 }
 .total-card-label { font-size: 10px; font-weight: 300; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
-.total-card-num {
-  font-family: 'Jost', sans-serif; font-size: 32px; font-weight: 200;
-  color: var(--accent); font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
-}
+.total-card-num { font-family: 'Jost', sans-serif; font-size: 32px; font-weight: 200; color: var(--accent); font-variant-numeric: tabular-nums; }
 .total-card-words { font-size: 12px; font-weight: 200; color: var(--muted); margin-top: 3px; letter-spacing: 0.05em; }
 
 .tome-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -222,16 +227,12 @@ textarea { resize: none; height: 68px; font-size: 14px; line-height: 1.55; }
 .tome-6 { background: rgba(130,130,140,0.10); border-color: rgba(130,130,140,0.22); }
 .tome-7 { background: rgba(165,165, 90,0.10); border-color: rgba(165,165, 90,0.22); }
 .tome-card-label { font-size: 11px; font-weight: 300; letter-spacing: 0.07em; color: #9090a8; margin-bottom: 8px; }
-.tome-card-num {
-  font-family: 'Jost', sans-serif; font-size: 22px; font-weight: 300;
-  color: #ede8df; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; line-height: 1;
-}
+.tome-card-num { font-family: 'Jost', sans-serif; font-size: 22px; font-weight: 300; color: #ede8df; font-variant-numeric: tabular-nums; line-height: 1; }
 .tome-card-words { font-size: 11px; font-weight: 200; color: var(--muted); margin-top: 3px; }
 .tome-dash { color: var(--dim); font-size: 18px; }
 .tome-edit-btn {
-  position: absolute; top: 10px; right: 11px;
-  background: none; border: none; color: var(--dim);
-  font-size: 12px; font-family: 'Jost', sans-serif;
+  position: absolute; top: 10px; right: 11px; background: none; border: none;
+  color: var(--dim); font-size: 12px; font-family: 'Jost', sans-serif;
   font-weight: 300; letter-spacing: 0.06em; cursor: pointer; transition: color 0.15s;
 }
 .tome-edit-btn:active { color: var(--accent); }
@@ -239,12 +240,23 @@ textarea { resize: none; height: 68px; font-size: 14px; line-height: 1.55; }
 .tome-input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 8px; }
 .tome-input-row input { font-size: 14px; padding: 8px 10px; }
 .tome-save-btn {
-  width: 100%; padding: 9px; background: transparent;
-  border: 1px solid var(--dim); border-radius: 6px; color: var(--accent);
-  font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 300;
-  letter-spacing: 0.13em; text-transform: uppercase; cursor: pointer;
+  width: 100%; padding: 9px; background: transparent; border: 1px solid var(--dim);
+  border-radius: 6px; color: var(--accent); font-family: 'Jost', sans-serif;
+  font-size: 11px; font-weight: 300; letter-spacing: 0.13em; text-transform: uppercase; cursor: pointer;
 }
 .tome-save-btn:active { background: var(--surface2); }
+
+/* Backup */
+.backup-panel { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 18px; }
+.backup-label { font-size: 10px; font-weight: 300; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.backup-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.btn-backup {
+  padding: 10px; background: transparent; border: 1px solid var(--border2); border-radius: 6px;
+  color: var(--muted); font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 300;
+  letter-spacing: 0.11em; text-transform: uppercase; cursor: pointer; transition: border-color 0.15s, color 0.15s;
+}
+.btn-backup:active { border-color: var(--accent); color: var(--accent); }
+.backup-msg { margin-top: 8px; font-size: 11px; font-weight: 200; color: var(--muted); letter-spacing: 0.05em; min-height: 16px; font-style: italic; }
 </style>
 </head>
 <body>
@@ -259,14 +271,39 @@ textarea { resize: none; height: 68px; font-size: 14px; line-height: 1.55; }
   <button class="nav-tab"        id="tabTomes"   onclick="switchTab('tomes')">Томá</button>
 </div>
 
+<!-- JOURNAL -->
 <div id="journalView">
   <div id="statsBar"></div>
 
   <div id="formWrap">
+    <!-- Date row -->
     <div class="frow">
-      <label>Дата</label>
-      <input type="date" id="fDate">
+      <label>Когда</label>
+      <div class="row3">
+        <select id="fMonth">
+          <option value="1">январь</option><option value="2">февраль</option>
+          <option value="3">март</option><option value="4">апрель</option>
+          <option value="5">май</option><option value="6">июнь</option>
+          <option value="7">июль</option><option value="8">август</option>
+          <option value="9">сентябрь</option><option value="10">октябрь</option>
+          <option value="11">ноябрь</option><option value="12">декабрь</option>
+        </select>
+        <input type="number" id="fYear" min="2020" max="2099" placeholder="год">
+        <input type="hidden" id="fYearHidden">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+        <div>
+          <label style="margin-bottom:4px;">день от</label>
+          <input type="number" id="fDayFrom" min="1" max="31" placeholder="—">
+        </div>
+        <div>
+          <label style="margin-bottom:4px;">день до</label>
+          <input type="number" id="fDayTo" min="1" max="31" placeholder="—">
+        </div>
+      </div>
+      <div class="date-hint" id="fDatePreview"></div>
     </div>
+    <!-- Type + name -->
     <div class="row2">
       <div class="frow">
         <label>Элемент</label>
@@ -281,6 +318,7 @@ textarea { resize: none; height: 68px; font-size: 14px; line-height: 1.55; }
         <input type="text" id="fName" placeholder="III, Тишина…">
       </div>
     </div>
+    <!-- Work chips -->
     <div class="frow">
       <label>Тип работы</label>
       <div class="chips" id="workChips">
@@ -296,6 +334,7 @@ textarea { resize: none; height: 68px; font-size: 14px; line-height: 1.55; }
       </div>
       <input type="hidden" id="fWork" value="wrote">
     </div>
+    <!-- Note -->
     <div class="frow">
       <label>Заметка о сдвиге</label>
       <textarea id="fNote" placeholder="что именно изменилось, что сдвинулось…"></textarea>
@@ -309,23 +348,25 @@ textarea { resize: none; height: 68px; font-size: 14px; line-height: 1.55; }
   <div id="entriesWrap"></div>
 </div>
 
-<div id="tomesView">
-  <div class="total-card">
-    <div class="total-card-label">всего по циклу</div>
-    <div class="total-card-num" id="totalChars">—</div>
-    <div class="total-card-words" id="totalWords"></div>
-    <div class="total-card-words" id="totalAl" style="opacity:0.6;"></div>
-  </div>
-  <div class="tome-grid" id="tomeGrid"></div>
-
-  <div class="backup-panel">
-    <div class="backup-label">Резервная копия</div>
-    <div class="backup-row">
-      <button class="btn-backup" onclick="exportBackup()">↓ Экспорт</button>
-      <button class="btn-backup" onclick="document.getElementById('importFile').click()">↑ Импорт</button>
+<!-- TOMES -->
+<div id="tomesView" style="display:none">
+  <div style="padding: 18px 20px 90px;">
+    <div class="total-card">
+      <div class="total-card-label">всего по циклу</div>
+      <div class="total-card-num" id="totalChars">—</div>
+      <div class="total-card-words" id="totalWords"></div>
+      <div class="total-card-words" id="totalAl" style="opacity:0.6;"></div>
     </div>
-    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
-    <div class="backup-msg" id="backupMsg"></div>
+    <div class="tome-grid" id="tomeGrid"></div>
+    <div class="backup-panel">
+      <div class="backup-label">Резервная копия</div>
+      <div class="backup-row">
+        <button class="btn-backup" onclick="exportBackup()">↓ Экспорт</button>
+        <button class="btn-backup" onclick="document.getElementById('importFile').click()">↑ Импорт</button>
+      </div>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
+      <div class="backup-msg" id="backupMsg"></div>
+    </div>
   </div>
 </div>
 
@@ -335,17 +376,46 @@ textarea { resize: none; height: 68px; font-size: 14px; line-height: 1.55; }
 const KEY      = 'kasaniya-v1';
 const TOME_KEY = 'kasaniya-tomes-v1';
 
-const LABELS = { wrote:'написала', finished:'дописала', structured:'структурно', moved:'переместила', edited:'редактировала', thought:'обдумывала', implanted:'вживила', merged:'соединила', polished:'шлифовала' };
-const WORK_VALS = ['wrote','finished','structured','moved','edited','thought','implanted','merged','polished'];
+const LABELS     = { wrote:'написала', finished:'дописала', structured:'структурно', moved:'переместила', edited:'редактировала', thought:'обдумывала', implanted:'вживила', merged:'соединила', polished:'шлифовала' };
+const WORK_VALS  = ['wrote','finished','structured','moved','edited','thought','implanted','merged','polished'];
 const MONTHS_GEN = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
 const MONTHS_NOM = ['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
 const TOME_NAMES = ['I','II','III','IV','V','VI','VII'];
 const TYPE_OPTS  = ['Том','Пакт','Манифест','Лирика','Интермеццо','Каприччио','Концепт','Другое'];
 
-let entries = [];
-let tomes   = TOME_NAMES.map(n => ({ num: n, chars: 0, words: 0 }));
+let entries      = [];
+let tomes        = TOME_NAMES.map(n => ({ num: n, chars: 0, words: 0 }));
 let formOpen     = false;
 let editingEntry = null;
+let activeMonth  = null;
+
+// ── Entry date utils ──
+// New format: { year, month, dayFrom?, dayTo? }
+// Legacy: { date: "YYYY-MM-DD" }
+function migrateEntry(e) {
+  if (e.date && !e.year) {
+    const parts = e.date.split('-');
+    return { ...e, year: parseInt(parts[0]), month: parseInt(parts[1]), dayFrom: parseInt(parts[2])||null, dayTo: null, date: undefined };
+  }
+  return e;
+}
+
+function entryMonthKey(e) {
+  return `${e.year}-${String(e.month).padStart(2,'0')}`;
+}
+
+function dateDisplay(e) {
+  const mon = MONTHS_GEN[e.month - 1];
+  const currentYear = new Date().getFullYear();
+  if (!e.dayFrom) return e.year !== currentYear ? `${MONTHS_NOM[e.month-1]} ${e.year}` : MONTHS_NOM[e.month-1];
+  if (!e.dayTo)   return `${e.dayFrom} ${mon}${e.year !== currentYear ? ' '+e.year : ''}`;
+  return `${e.dayFrom}–${e.dayTo} ${mon}${e.year !== currentYear ? ' '+e.year : ''}`;
+}
+
+function entrySortKey(e) {
+  // For sorting newest first: descending year, month, dayFrom (null = 0 = earliest in month)
+  return e.year * 10000 + e.month * 100 + (e.dayFrom || 0);
+}
 
 // ── Storage ──
 const store = {
@@ -373,13 +443,13 @@ const store = {
 function switchTab(tab) {
   const isJ = tab === 'journal';
   document.getElementById('journalView').style.display = isJ ? 'block' : 'none';
-  document.getElementById('tomesView').style.display   = isJ ? 'none' : 'block';
+  document.getElementById('tomesView').style.display   = isJ ? 'none'  : 'block';
   document.getElementById('tabJournal').classList.toggle('active', isJ);
   document.getElementById('tabTomes').classList.toggle('active', !isJ);
   if (!isJ) { renderTomes(); closeForm(); }
 }
 
-// ── Chips helper ──
+// ── Chips ──
 function selectChip(el, groupId, hiddenId) {
   document.querySelectorAll(`#${groupId} .chip`).forEach(c => c.className = 'chip');
   const val = el.dataset.val;
@@ -392,6 +462,30 @@ function setChips(groupId, hiddenId, val) {
   });
   document.getElementById(hiddenId).value = val;
 }
+function chipsHtml(groupId, hiddenId, val) {
+  return WORK_VALS.map(v =>
+    `<button class="chip${val===v?' active-'+v:''}" data-val="${v}" onclick="selectChip(this,'${groupId}','${hiddenId}')">${LABELS[v]}</button>`
+  ).join('');
+}
+
+// ── Date preview ──
+function updateDatePreview() {
+  const m  = parseInt(document.getElementById('fMonth').value);
+  const y  = parseInt(document.getElementById('fYear').value);
+  const d1 = parseInt(document.getElementById('fDayFrom').value)||null;
+  const d2 = parseInt(document.getElementById('fDayTo').value)||null;
+  const prev = document.getElementById('fDatePreview');
+  if (!y || !m) { prev.textContent = ''; return; }
+  const fake = { year: y, month: m, dayFrom: d1, dayTo: d2 };
+  prev.textContent = dateDisplay(fake);
+}
+['fMonth','fYear','fDayFrom','fDayTo'].forEach(id => {
+  // attach after DOM ready
+  document.addEventListener('DOMContentLoaded', () => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', updateDatePreview);
+  });
+});
 
 // ── Form ──
 function toggleForm() { formOpen ? closeForm() : openForm(); }
@@ -399,12 +493,18 @@ function openForm(prefill) {
   formOpen = true; editingEntry = null;
   document.getElementById('formWrap').classList.add('open');
   document.getElementById('fab').textContent = '×';
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('fDate').value = prefill ? prefill.date : today;
-  document.getElementById('fType').value = prefill ? prefill.type : 'Пакт';
-  document.getElementById('fName').value = prefill ? prefill.name : '';
-  document.getElementById('fNote').value = prefill ? prefill.note : '';
+  const now = new Date();
+  const m = prefill ? prefill.month : now.getMonth()+1;
+  const y = prefill ? prefill.year  : now.getFullYear();
+  document.getElementById('fMonth').value   = m;
+  document.getElementById('fYear').value    = y;
+  document.getElementById('fDayFrom').value = prefill && prefill.dayFrom ? prefill.dayFrom : '';
+  document.getElementById('fDayTo').value   = prefill && prefill.dayTo   ? prefill.dayTo   : '';
+  document.getElementById('fType').value    = prefill ? prefill.type : 'Пакт';
+  document.getElementById('fName').value    = prefill ? prefill.name : '';
+  document.getElementById('fNote').value    = prefill ? prefill.note : '';
   setChips('workChips', 'fWork', prefill ? prefill.work : 'wrote');
+  updateDatePreview();
   if (!prefill) setTimeout(() => document.getElementById('fName').focus(), 80);
 }
 function closeForm() {
@@ -413,65 +513,149 @@ function closeForm() {
   document.getElementById('fab').textContent = '+';
 }
 
+// Listen to date fields
+['fMonth','fYear','fDayFrom','fDayTo'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', updateDatePreview);
+});
+
 // ── CRUD ──
 function addEntry() {
-  const date = document.getElementById('fDate').value;
-  const name = document.getElementById('fName').value.trim();
-  if (!date) { shake('fDate'); return; }
-  if (!name) { shake('fName'); return; }
-  entries.unshift({ id: Date.now(), date, type: document.getElementById('fType').value, name, work: document.getElementById('fWork').value, note: document.getElementById('fNote').value.trim() });
+  const month = parseInt(document.getElementById('fMonth').value);
+  const year  = parseInt(document.getElementById('fYear').value);
+  const name  = document.getElementById('fName').value.trim();
+  if (!year)  { shake('fYear');  return; }
+  if (!name)  { shake('fName');  return; }
+  const dayFrom = parseInt(document.getElementById('fDayFrom').value)||null;
+  const dayTo   = parseInt(document.getElementById('fDayTo').value)||null;
+  const entry = {
+    id: Date.now(), year, month,
+    dayFrom: dayFrom || null,
+    dayTo:   dayTo   || null,
+    type: document.getElementById('fType').value,
+    name,
+    work: document.getElementById('fWork').value,
+    note: document.getElementById('fNote').value.trim()
+  };
+  entries.unshift(entry);
+  entries.sort((a,b) => entrySortKey(b) - entrySortKey(a));
   store.save(entries);
   render();
   closeForm();
 }
+
 function shake(id) {
   const el = document.getElementById(id);
+  if (!el) return;
   el.classList.add('err');
   setTimeout(() => el.classList.remove('err'), 1200);
 }
+
 function delEntry(id) { entries = entries.filter(e => e.id !== id); store.save(entries); render(); }
 function startEdit(id) { editingEntry = id; renderEntries(); }
 function cancelEdit()  { editingEntry = null; renderEntries(); }
+
 function saveEdit(id) {
   const e = entries.find(x => x.id === id);
+  if (!e) return;
   const name = document.getElementById(`eName${id}`).value.trim();
   if (!name) { shake(`eName${id}`); return; }
-  e.date = document.getElementById(`eDate${id}`).value || e.date;
-  e.type = document.getElementById(`eType${id}`).value;
-  e.name = name;
-  e.work = document.getElementById(`eWork${id}`).value;
-  e.note = document.getElementById(`eNote${id}`).value.trim();
+  e.year    = parseInt(document.getElementById(`eYear${id}`).value)  || e.year;
+  e.month   = parseInt(document.getElementById(`eMonth${id}`).value) || e.month;
+  e.dayFrom = parseInt(document.getElementById(`eDayFrom${id}`).value)||null;
+  e.dayTo   = parseInt(document.getElementById(`eDayTo${id}`).value)||null;
+  e.type    = document.getElementById(`eType${id}`).value;
+  e.name    = name;
+  e.work    = document.getElementById(`eWork${id}`).value;
+  e.note    = document.getElementById(`eNote${id}`).value.trim();
+  entries.sort((a,b) => entrySortKey(b) - entrySortKey(a));
   store.save(entries);
   editingEntry = null;
   render();
 }
 
-// ── Render journal ──
+// ── Render stats ──
 function render() { renderStats(); renderEntries(); }
 
 function renderStats() {
   const el = document.getElementById('statsBar');
   if (!entries.length) { el.innerHTML = ''; return; }
-  const now = new Date();
-  const thisM = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  const thisMonth = entries.filter(e => e.date.startsWith(thisM)).length;
-  el.innerHTML = `<span><b>${entries.length}</b> касаний</span><span><b>${new Set(entries.map(e=>`${e.type}·${e.name.toLowerCase()}`)).size}</b> элементов</span><span>этот месяц: <b>${thisMonth}</b></span>`;
+
+  const now    = new Date();
+  const ago30d = new Date(now - 30*24*60*60*1000);
+  const recent = entries.filter(e => {
+    const d = new Date(e.year, e.month-1, e.dayFrom||1);
+    return d >= ago30d;
+  }).length;
+
+  const monthCounts = new Map();
+  for (const e of entries) {
+    const k = entryMonthKey(e);
+    monthCounts.set(k, (monthCounts.get(k)||0)+1);
+  }
+  const months = [...monthCounts.keys()].sort((a,b) => b.localeCompare(a));
+
+  const curYear = now.getFullYear();
+  const mchips  = months.map(k => {
+    const [y,m] = k.split('-');
+    const label = MONTHS_NOM[parseInt(m)-1] + (parseInt(y) !== curYear ? ' '+y : '');
+    const active = activeMonth === k ? ' active' : '';
+    return `<button class="mchip${active}" onclick="setMonth('${k}')">${label}<span class="mchip-count">${monthCounts.get(k)}</span></button>`;
+  }).join('');
+
+  const allActive = activeMonth === null ? ' active' : '';
+  el.innerHTML = `
+    <div class="stats-top">
+      <span><b>${entries.length}</b> касаний</span>
+      <span>30 дней: <b>${recent}</b></span>
+    </div>
+    <div class="month-filter">
+      <button class="mchip${allActive}" onclick="setMonth(null)">все</button>
+      ${mchips}
+    </div>`;
 }
 
-function dateShort(s) { const [,m,d]=s.split('-'); return `${parseInt(d)} ${MONTHS_GEN[parseInt(m)-1]}`; }
-function monthKey(s) { return s.slice(0,7); }
-function monthTitle(k) { const [y,m]=k.split('-'); return `${MONTHS_NOM[parseInt(m)-1]} ${y}`; }
-function chipsHtml(groupId, hiddenId, val) {
-  return WORK_VALS.map(v =>
-    `<button class="chip${val===v?' active-'+v:''}" data-val="${v}" onclick="selectChip(this,'${groupId}','${hiddenId}')">${LABELS[v]}</button>`
+function setMonth(k) { activeMonth = k; renderStats(); renderEntries(); }
+
+function monthTitle(k) {
+  const [y,m] = k.split('-');
+  const curYear = new Date().getFullYear();
+  return parseInt(y) === curYear
+    ? MONTHS_NOM[parseInt(m)-1].toUpperCase()
+    : `${MONTHS_NOM[parseInt(m)-1].toUpperCase()} ${y}`;
+}
+
+// ── Render entries ──
+function editDateFields(e) {
+  const mOpts = MONTHS_NOM.map((n,i) =>
+    `<option value="${i+1}"${e.month===i+1?' selected':''}>${n}</option>`
   ).join('');
+  return `
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px;margin-bottom:8px;">
+      <div><label style="margin-bottom:4px;">месяц</label><select id="eMonth${e.id}">${mOpts}</select></div>
+      <div><label style="margin-bottom:4px;">год</label><input type="number" id="eYear${e.id}" value="${e.year}" min="2020" max="2099"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+      <div><label style="margin-bottom:4px;">день от</label><input type="number" id="eDayFrom${e.id}" value="${e.dayFrom||''}" min="1" max="31" placeholder="—"></div>
+      <div><label style="margin-bottom:4px;">день до</label><input type="number" id="eDayTo${e.id}"   value="${e.dayTo||''}"   min="1" max="31" placeholder="—"></div>
+    </div>`;
 }
 
 function renderEntries() {
   const wrap = document.getElementById('entriesWrap');
-  if (!entries.length) { wrap.innerHTML = `<div class="empty">Здесь будет след работы.<br>Каждое касание — запись.</div>`; return; }
+  const filtered = activeMonth
+    ? entries.filter(e => entryMonthKey(e) === activeMonth)
+    : entries;
+  if (!filtered.length) {
+    wrap.innerHTML = `<div class="empty">Здесь будет след работы.<br>Каждое касание — запись.</div>`;
+    return;
+  }
   const groups = new Map();
-  for (const e of entries) { const k=monthKey(e.date); if (!groups.has(k)) groups.set(k,[]); groups.get(k).push(e); }
+  for (const e of filtered) {
+    const k = entryMonthKey(e);
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(e);
+  }
   let html = '<div class="entries">';
   for (const [k, list] of groups) {
     html += `<div class="month-group"><div class="month-label">${monthTitle(k)}</div>`;
@@ -480,11 +664,11 @@ function renderEntries() {
         html += `<div class="entry-card"><div class="inline-edit">
           <div class="chips" id="eChips${e.id}">${chipsHtml('eChips'+e.id,'eWork'+e.id,e.work)}</div>
           <input type="hidden" id="eWork${e.id}" value="${e.work}">
+          ${editDateFields(e)}
           <div class="row2" style="margin-bottom:8px;">
-            <div><label style="margin-bottom:4px;">Дата</label><input type="date" id="eDate${e.id}" value="${e.date}"></div>
             <div><label style="margin-bottom:4px;">Элемент</label><select id="eType${e.id}">${TYPE_OPTS.map(t=>`<option${t===e.type?' selected':''}>${t}</option>`).join('')}</select></div>
+            <div><label style="margin-bottom:4px;">Название / №</label><input type="text" id="eName${e.id}" value="${e.name.replace(/"/g,'&quot;')}" placeholder="Название…"></div>
           </div>
-          <input type="text" id="eName${e.id}" value="${e.name.replace(/"/g,'&quot;')}" placeholder="Название / №">
           <textarea id="eNote${e.id}" placeholder="заметка о сдвиге…">${e.note}</textarea>
           <div class="btn-row"><button class="btn-submit" onclick="saveEdit(${e.id})">Сохранить</button><button class="btn-cancel" onclick="cancelEdit()">Отмена</button></div>
           <button class="btn-delete" onclick="delEntry(${e.id})">удалить запись</button>
@@ -494,7 +678,10 @@ function renderEntries() {
           <div class="entry-actions">
             <button class="entry-btn edit" onclick="startEdit(${e.id})">✎</button>
           </div>
-          <div class="entry-head"><span class="badge badge-${e.work}">${LABELS[e.work]}</span><span class="entry-date-sm">${dateShort(e.date)}</span></div>
+          <div class="entry-head">
+            <span class="badge badge-${e.work}">${LABELS[e.work]}</span>
+            <span class="entry-date-sm">${dateDisplay(e)}</span>
+          </div>
           <div class="entry-subtype">${e.type}</div>
           <div class="entry-name">${e.name}</div>
           ${e.note?`<div class="entry-note">${e.note}</div>`:''}
@@ -507,7 +694,7 @@ function renderEntries() {
   wrap.innerHTML = html;
 }
 
-// ── Render tomes ──
+// ── Tomes ──
 function fmt(n) { return n ? n.toLocaleString('ru-RU') : null; }
 
 function renderTomes() {
@@ -515,8 +702,7 @@ function renderTomes() {
   const tw = tomes.reduce((a,t)=>a+(t.words||0),0);
   document.getElementById('totalChars').textContent = fmt(tc) || '—';
   document.getElementById('totalWords').textContent = tw ? fmt(tw)+'\u00a0слов' : '';
-  const alEl = document.getElementById('totalAl');
-  alEl.textContent = tc ? (tc/40000).toFixed(2)+'\u00a0а.л.' : '';
+  document.getElementById('totalAl').textContent    = tc ? (tc/40000).toFixed(2)+'\u00a0а.л.' : '';
   document.getElementById('tomeGrid').innerHTML = tomes.map((t,i) => `
     <div class="tome-card tome-${i+1}" id="tomeCard${i}">
       <button class="tome-edit-btn" onclick="startEditTome(${i})">ред.</button>
@@ -550,11 +736,10 @@ function saveTome(i) {
 // ── Backup ──
 function exportBackup() {
   const data = { entries, tomes, exported: new Date().toISOString() };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
-  const date = new Date().toISOString().slice(0,10);
-  a.href = url; a.download = `kasaniya-${date}.json`; a.click();
+  a.href = url; a.download = `kasaniya-${new Date().toISOString().slice(0,10)}.json`; a.click();
   URL.revokeObjectURL(url);
   showBackupMsg('Экспорт выполнен');
 }
@@ -565,12 +750,10 @@ function importBackup(e) {
     try {
       const data = JSON.parse(ev.target.result);
       if (!data.entries || !data.tomes) throw new Error();
-      entries = data.entries;
+      entries = data.entries.map(migrateEntry);
       tomes   = data.tomes;
-      store.save(entries);
-      store.saveTomes(tomes);
-      render();
-      renderTomes();
+      store.save(entries); store.saveTomes(tomes);
+      render(); renderTomes();
       showBackupMsg(`Загружено: ${entries.length} касаний`);
     } catch { showBackupMsg('Ошибка — файл не распознан'); }
   };
@@ -586,7 +769,7 @@ function showBackupMsg(text) {
 
 // ── Init ──
 Promise.all([store.load(), store.loadTomes()]).then(([ed, td]) => {
-  entries = ed;
+  entries = ed.map(migrateEntry);
   if (td) tomes = td;
   render();
 });
