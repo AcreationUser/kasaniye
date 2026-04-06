@@ -6,7 +6,7 @@
 <title>Касания — Спектры</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230f101a'/%3E%3Cpath d='M22 5 C22 5 7 11 8 25 L10.5 22 C10.5 22 13 13 22 5Z' fill='%23c4a8be'/%3E%3Cpath d='M8 25.5 C9 22 11 18 14.5 15' stroke='%23c4a8be' stroke-width='1.4' stroke-linecap='round' fill='none' opacity='0.6'/%3E%3Cpath d='M12 28 L9 25' stroke='%23c4a8be' stroke-width='1.2' stroke-linecap='round' opacity='0.5'/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='38' fill='%230f101a'/%3E%3Cpath d='M130 28 C130 28 40 62 44 140 L58 124 C58 124 74 72 130 28Z' fill='%23c4a8be'/%3E%3Cpath d='M44 142 C50 122 62 100 82 84' stroke='%23c4a8be' stroke-width='7' stroke-linecap='round' fill='none' opacity='0.6'/%3E%3Cpath d='M66 158 L48 140' stroke='%23c4a8be' stroke-width='6' stroke-linecap='round' opacity='0.5'/%3E%3C/svg%3E">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@200;300;400;500&family=Inter:wght@300;400&display=swap" rel="stylesheet">
 <style>
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
@@ -190,7 +190,7 @@ textarea { resize: none; height: 68px; font-size: 14px; line-height: 1.55; }
 .entry-date-sm { font-size: 11px; font-weight: 200; color: var(--muted); }
 .entry-subtype { font-size: 10px; font-weight: 300; letter-spacing: 0.13em; text-transform: uppercase; color: #8c88a0; margin-bottom: 1px; }
 .entry-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; color: #ede8df; line-height: 1.25; }
-.entry-note { font-family: 'Cormorant Garamond', serif; font-size: 16px; color: #a8a4b8; line-height: 1.6; margin-top: 6px; }
+.entry-note { font-family: 'Inter', Arial, sans-serif; font-size: 13.5px; font-weight: 300; color: #a8a4b8; line-height: 1.72; margin-top: 6px; }
 .entry-actions { position: absolute; top: 13px; right: 0; }
 .entry-btn { background: none; border: none; color: var(--dim); font-size: 16px; cursor: pointer; padding: 3px 2px; line-height: 1; }
 .entry-btn.edit:active { color: var(--accent); }
@@ -910,7 +910,7 @@ function renderTomes() {
     </div>`).join('') + `
     <div class="tome-card tome-concepts" id="tomeCardConcepts">
       <button class="tome-edit-btn" onclick="startEditConcepts()">ред.</button>
-      <div class="tome-card-label" style="color:#9a90b0;">Концепты</div>
+      <div class="tome-card-label" style="color:#9a90b0;">Фрагменты</div>
       <div class="tome-card-num">${fmt(concepts.chars)||'<span class="tome-dash">—</span>'}</div>
       ${concepts.words?`<div class="tome-card-words">${fmt(concepts.words)}\u00a0слов</div>`:''}
       ${concepts.chars?`<div class="tome-card-words" style="margin-top:2px;opacity:0.7;">${(concepts.chars/40000).toFixed(2)}\u00a0а.л.</div>`:''}
@@ -932,7 +932,7 @@ function startEditTome(i) {
 
 function startEditConcepts() {
   document.getElementById('tomeCardConcepts').innerHTML = `
-    <div class="tome-card-label" style="color:#9a90b0;">Концепты</div>
+    <div class="tome-card-label" style="color:#9a90b0;">Фрагменты</div>
     <div class="tome-input-form">
       <div class="tome-input-row">
         <div><label style="margin-bottom:3px;">символов</label><input id="cc" type="number" value="${concepts.chars||''}" placeholder="0"></div>
