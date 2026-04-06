@@ -258,6 +258,76 @@ textarea { resize: none; height: 68px; font-size: 14px; line-height: 1.55; }
 }
 .btn-backup:active { border-color: var(--accent); color: var(--accent); }
 .backup-msg { margin-top: 8px; font-size: 11px; font-weight: 200; color: var(--muted); letter-spacing: 0.05em; min-height: 16px; font-style: italic; }
+
+/* ── Stats panel ── */
+.stats-toggle-btn {
+  margin-left: auto; background: none; border: none; padding: 0;
+  font-family: 'Jost', sans-serif; font-size: 10px; font-weight: 300;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--dim); cursor: pointer; transition: color 0.13s;
+}
+.stats-toggle-btn.open { color: var(--accent); }
+.stats-toggle-btn:active { color: var(--accent); }
+
+#statsPanel {
+  display: none; padding: 16px 20px 18px;
+  border-bottom: 1px solid var(--border); background: var(--surface);
+  animation: slideDown 0.16s ease;
+}
+#statsPanel.open { display: block; }
+
+.sp-year {
+  font-size: 10px; font-weight: 300; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--dim); margin-bottom: 11px;
+}
+.year-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+  margin-bottom: 13px;
+}
+.month-tile {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 7px; padding: 9px 6px 8px;
+  text-align: center; transition: border-color 0.13s, background 0.13s;
+}
+.month-tile.has-data { cursor: pointer; }
+.month-tile.has-data:active { background: rgba(196,168,190,0.07); }
+.month-tile.selected { border-color: var(--accent); background: rgba(196,168,190,0.07); }
+.month-tile.empty { opacity: 0.28; }
+.tile-name {
+  display: block; font-size: 9px; font-weight: 400; letter-spacing: 0.13em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 7px;
+}
+.month-tile.selected .tile-name { color: var(--accent); }
+.tile-dots { display: flex; justify-content: center; gap: 3px; min-height: 5px; }
+.dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); opacity: 0.7; }
+
+.stat-card {
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 14px 16px;
+  animation: slideDown 0.13s ease;
+}
+.stat-card-month {
+  font-family: 'Cormorant Garamond', serif; font-size: 22px;
+  font-weight: 400; color: #ece7de; margin-bottom: 3px;
+}
+.stat-card-count {
+  font-size: 11px; font-weight: 200; color: var(--muted);
+  letter-spacing: 0.07em; margin-bottom: 12px;
+}
+.stat-sec {
+  font-size: 9px; font-weight: 400; letter-spacing: 0.17em;
+  text-transform: uppercase; color: var(--dim); margin-bottom: 7px;
+}
+.stat-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 11px; }
+.stat-chip {
+  font-size: 10px; font-weight: 300; padding: 3px 10px;
+  border-radius: 20px; border: 1px solid; letter-spacing: 0.04em;
+}
+.stat-types { display: flex; flex-wrap: wrap; gap: 5px; }
+.stat-type-tag {
+  font-size: 10px; font-weight: 300; color: var(--muted);
+  padding: 2px 9px; border: 1px solid var(--border2); border-radius: 4px;
+}
 </style>
 </head>
 <body>
@@ -275,6 +345,7 @@ textarea { resize: none; height: 68px; font-size: 14px; line-height: 1.55; }
 <!-- JOURNAL -->
 <div id="journalView">
   <div id="statsBar"></div>
+  <div id="statsPanel"></div>
 
   <div id="formWrap">
     <!-- Date row -->
@@ -391,6 +462,14 @@ let tomes        = TOME_NAMES.map(n => ({ num: n, chars: 0, words: 0 }));
 let formOpen     = false;
 let editingEntry = null;
 let activeMonth  = null;
+let statsOpen    = false;
+let selectedStatMonth = null;
+
+const WORK_COLORS = {
+  wrote:'var(--c-wrote)', finished:'var(--c-finished)', structured:'var(--c-structured)',
+  moved:'var(--c-moved)', edited:'var(--c-edited)', thought:'var(--c-thought)',
+  implanted:'var(--c-implanted)', merged:'var(--c-merged)', polished:'var(--c-polished)'
+};
 
 // ── Entry date utils ──
 // New format: { year, month, dayFrom?, dayTo? }
@@ -601,7 +680,7 @@ function saveEdit(id) {
 }
 
 // ── Render stats ──
-function render() { renderStats(); renderEntries(); }
+function render() { renderStats(); renderEntries(); if (statsOpen) renderStatsPanel(); }
 
 function renderStats() {
   const el = document.getElementById('statsBar');
@@ -634,11 +713,103 @@ function renderStats() {
     <div class="stats-top">
       <span><b>${entries.length}</b> касаний</span>
       <span>30 дней: <b>${recent}</b></span>
+      <button class="stats-toggle-btn${statsOpen?' open':''}" onclick="toggleStats()">◈ карта</button>
     </div>
     <div class="month-filter">
       <button class="mchip${allActive}" onclick="setMonth(null)">все</button>
       ${mchips}
     </div>`;
+}
+
+function toggleStats() {
+  statsOpen = !statsOpen;
+  document.getElementById('statsPanel').classList.toggle('open', statsOpen);
+  if (statsOpen) renderStatsPanel();
+}
+
+function dotsCount(n, max) {
+  if (!n || !max) return 0;
+  return Math.max(1, Math.min(5, Math.round(n / max * 5)));
+}
+
+function renderStatsPanel() {
+  const panel = document.getElementById('statsPanel');
+  if (!statsOpen) return;
+  const curYear = new Date().getFullYear();
+  const MONTHS_SHORT = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+
+  const monthCounts = new Map();
+  for (const e of entries) {
+    const k = entryMonthKey(e);
+    monthCounts.set(k, (monthCounts.get(k)||0)+1);
+  }
+  const maxCount = Math.max(...[...monthCounts.values()], 1);
+
+  let tilesHtml = '';
+  for (let m = 1; m <= 12; m++) {
+    const k = `${curYear}-${String(m).padStart(2,'0')}`;
+    const count = monthCounts.get(k) || 0;
+    const dots  = dotsCount(count, maxCount);
+    const isEmpty = count === 0;
+    const isSelected = selectedStatMonth === k;
+    const cls = ['month-tile', isEmpty ? 'empty' : 'has-data', isSelected ? 'selected' : ''].filter(Boolean).join(' ');
+    const onclick = isEmpty ? '' : `onclick="selectStatMonth('${k}')"`;
+    const dotsHtml = dots > 0
+      ? `<div class="tile-dots">${'<div class="dot"></div>'.repeat(dots)}</div>`
+      : '<div class="tile-dots"></div>';
+    tilesHtml += `<div class="${cls}" ${onclick}><span class="tile-name">${MONTHS_SHORT[m-1]}</span>${dotsHtml}</div>`;
+  }
+
+  const cardHtml = selectedStatMonth ? buildStatCard(selectedStatMonth) : '';
+
+  panel.innerHTML = `
+    <div class="sp-year">${curYear}</div>
+    <div class="year-grid">${tilesHtml}</div>
+    ${cardHtml}`;
+}
+
+function selectStatMonth(k) {
+  selectedStatMonth = selectedStatMonth === k ? null : k;
+  renderStatsPanel();
+}
+
+function buildStatCard(k) {
+  const [y, m] = k.split('-');
+  const monthEntries = entries.filter(e => entryMonthKey(e) === k);
+  const total = monthEntries.length;
+  const monthName = MONTHS_NOM[parseInt(m)-1];
+  const yearStr = parseInt(y) !== new Date().getFullYear() ? ' ' + y : '';
+
+  // Подсчёт типов работ
+  const workCounts = {};
+  for (const e of monthEntries)
+    for (const w of (e.work||'wrote').split(','))
+      workCounts[w] = (workCounts[w]||0) + 1;
+  const workHtml = Object.entries(workCounts)
+    .sort((a,b) => b[1]-a[1])
+    .map(([w,n]) => {
+      const c = WORK_COLORS[w] || 'var(--muted)';
+      return `<span class="stat-chip" style="color:${c};border-color:${c}44">${LABELS[w]} <b>${n}</b></span>`;
+    }).join('');
+
+  // Подсчёт элементов структуры
+  const typeCounts = {};
+  for (const e of monthEntries) typeCounts[e.type] = (typeCounts[e.type]||0)+1;
+  const typesHtml = Object.entries(typeCounts)
+    .sort((a,b) => b[1]-a[1])
+    .map(([t,n]) => `<span class="stat-type-tag">${t} ${n}</span>`).join('');
+
+  // Склонение
+  const pl = total === 1 ? 'е' : total < 5 ? 'я' : 'й';
+
+  return `<div class="stat-card">
+    <div class="stat-card-month">${monthName}${yearStr}</div>
+    <div class="stat-card-count">${total} касани${pl}</div>
+    <div class="stat-sec">Тип работы</div>
+    <div class="stat-chips">${workHtml}</div>
+    <div class="stat-sec">Элементы</div>
+    <div class="stat-types">${typesHtml}</div>
+  </div>`;
 }
 
 function setMonth(k) { activeMonth = k; renderStats(); renderEntries(); }
@@ -790,8 +961,11 @@ function exportBackup() {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
-  a.href = url; a.download = `kasaniya-${new Date().toISOString().slice(0,10)}.json`; a.click();
-  URL.revokeObjectURL(url);
+  a.href = url;
+  a.download = `kasaniya-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
   showBackupMsg('Экспорт выполнен');
 }
 function importBackup(e) {
