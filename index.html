@@ -190,7 +190,7 @@ textarea { resize: none; height: 68px; font-size: 14px; line-height: 1.55; }
 .entry-date-sm { font-size: 11px; font-weight: 200; color: var(--muted); }
 .entry-subtype { font-size: 10px; font-weight: 300; letter-spacing: 0.13em; text-transform: uppercase; color: #8c88a0; margin-bottom: 1px; }
 .entry-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; color: #ede8df; line-height: 1.25; }
-.entry-note { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 15px; color: #7e7a90; line-height: 1.55; margin-top: 5px; }
+.entry-note { font-family: 'Cormorant Garamond', serif; font-size: 16px; color: #a8a4b8; line-height: 1.6; margin-top: 6px; }
 .entry-actions { position: absolute; top: 13px; right: 0; }
 .entry-btn { background: none; border: none; color: var(--dim); font-size: 16px; cursor: pointer; padding: 3px 2px; line-height: 1; }
 .entry-btn.edit:active { color: var(--accent); }
@@ -226,6 +226,7 @@ textarea { resize: none; height: 68px; font-size: 14px; line-height: 1.55; }
 .tome-5 { background: rgba(165, 90,190,0.10); border-color: rgba(165, 90,190,0.22); }
 .tome-6 { background: rgba(130,130,140,0.10); border-color: rgba(130,130,140,0.22); }
 .tome-7 { background: rgba(165,165, 90,0.10); border-color: rgba(165,165, 90,0.22); }
+.tome-concepts { background: rgba(140,120,160,0.08); border-color: rgba(140,120,160,0.18); }
 .tome-card-label { font-size: 11px; font-weight: 300; letter-spacing: 0.07em; color: #9090a8; margin-bottom: 8px; }
 .tome-card-num { font-family: 'Jost', sans-serif; font-size: 22px; font-weight: 300; color: #ede8df; font-variant-numeric: tabular-nums; line-height: 1; }
 .tome-card-words { font-size: 11px; font-weight: 200; color: var(--muted); margin-top: 3px; }
@@ -322,15 +323,15 @@ textarea { resize: none; height: 68px; font-size: 14px; line-height: 1.55; }
     <div class="frow">
       <label>Тип работы</label>
       <div class="chips" id="workChips">
-        <button class="chip active-wrote" data-val="wrote"      onclick="selectChip(this,'workChips','fWork')">написала</button>
-        <button class="chip"             data-val="finished"   onclick="selectChip(this,'workChips','fWork')">дописала</button>
-        <button class="chip"             data-val="structured" onclick="selectChip(this,'workChips','fWork')">структурно</button>
-        <button class="chip"             data-val="moved"      onclick="selectChip(this,'workChips','fWork')">переместила</button>
-        <button class="chip"             data-val="edited"     onclick="selectChip(this,'workChips','fWork')">редактировала</button>
-        <button class="chip"             data-val="thought"    onclick="selectChip(this,'workChips','fWork')">обдумывала</button>
-        <button class="chip"             data-val="implanted"  onclick="selectChip(this,'workChips','fWork')">вживила</button>
-        <button class="chip"             data-val="merged"     onclick="selectChip(this,'workChips','fWork')">соединила</button>
-        <button class="chip"             data-val="polished"   onclick="selectChip(this,'workChips','fWork')">шлифовала</button>
+        <button class="chip active-wrote" data-val="wrote"      onclick="toggleChip(this,'workChips','fWork')">написала</button>
+        <button class="chip"             data-val="finished"   onclick="toggleChip(this,'workChips','fWork')">дописала</button>
+        <button class="chip"             data-val="structured" onclick="toggleChip(this,'workChips','fWork')">структурно</button>
+        <button class="chip"             data-val="moved"      onclick="toggleChip(this,'workChips','fWork')">переместила</button>
+        <button class="chip"             data-val="edited"     onclick="toggleChip(this,'workChips','fWork')">редактировала</button>
+        <button class="chip"             data-val="thought"    onclick="toggleChip(this,'workChips','fWork')">обдумывала</button>
+        <button class="chip"             data-val="implanted"  onclick="toggleChip(this,'workChips','fWork')">вживила</button>
+        <button class="chip"             data-val="merged"     onclick="toggleChip(this,'workChips','fWork')">соединила</button>
+        <button class="chip"             data-val="polished"   onclick="toggleChip(this,'workChips','fWork')">шлифовала</button>
       </div>
       <input type="hidden" id="fWork" value="wrote">
     </div>
@@ -383,6 +384,8 @@ const MONTHS_NOM = ['январь','февраль','март','апрель','�
 const TOME_NAMES = ['I','II','III','IV','V','VI','VII'];
 const TYPE_OPTS  = ['Том','Пакт','Манифест','Лирика','Интермеццо','Каприччио','Концепт','Другое'];
 
+let concepts = { chars: 0, words: 0 };
+const CONCEPTS_KEY = 'kasaniya-concepts-v1';
 let entries      = [];
 let tomes        = TOME_NAMES.map(n => ({ num: n, chars: 0, words: 0 }));
 let formOpen     = false;
@@ -436,6 +439,15 @@ const store = {
   saveTomes(d) {
     try { if (window.storage) { window.storage.set(TOME_KEY, JSON.stringify(d)); return; } } catch {}
     try { localStorage.setItem(TOME_KEY, JSON.stringify(d)); } catch {}
+  },
+  async loadConcepts() {
+    try { if (window.storage) { const r = await window.storage.get(CONCEPTS_KEY); if (r) return JSON.parse(r.value); } } catch {}
+    try { const r = localStorage.getItem(CONCEPTS_KEY); if (r) return JSON.parse(r); } catch {}
+    return null;
+  },
+  saveConcepts(d) {
+    try { if (window.storage) { window.storage.set(CONCEPTS_KEY, JSON.stringify(d)); return; } } catch {}
+    try { localStorage.setItem(CONCEPTS_KEY, JSON.stringify(d)); } catch {}
   }
 };
 
@@ -449,23 +461,37 @@ function switchTab(tab) {
   if (!isJ) { renderTomes(); closeForm(); }
 }
 
-// ── Chips ──
-function selectChip(el, groupId, hiddenId) {
-  document.querySelectorAll(`#${groupId} .chip`).forEach(c => c.className = 'chip');
+// ── Chips (multi-select) ──
+function toggleChip(el, groupId, hiddenId) {
   const val = el.dataset.val;
-  el.className = `chip active-${val}`;
-  document.getElementById(hiddenId).value = val;
+  const isActive = el.className.includes('active-');
+  if (isActive) {
+    // Deselect only if not the last active chip
+    const activeCount = document.querySelectorAll(`#${groupId} .chip[class*="active-"]`).length;
+    if (activeCount <= 1) return; // keep at least one
+    el.className = 'chip';
+  } else {
+    el.className = `chip active-${val}`;
+  }
+  // Collect all active vals
+  const vals = [...document.querySelectorAll(`#${groupId} .chip[class*="active-"]`)].map(c => c.dataset.val);
+  document.getElementById(hiddenId).value = vals.join(',');
 }
+// Legacy single-select (kept for inline edit compat via setChips)
+function selectChip(el, groupId, hiddenId) { toggleChip(el, groupId, hiddenId); }
 function setChips(groupId, hiddenId, val) {
+  const vals = typeof val === 'string' ? val.split(',') : val;
   document.querySelectorAll(`#${groupId} .chip`).forEach(c => {
-    c.className = c.dataset.val === val ? `chip active-${val}` : 'chip';
+    c.className = vals.includes(c.dataset.val) ? `chip active-${c.dataset.val}` : 'chip';
   });
-  document.getElementById(hiddenId).value = val;
+  document.getElementById(hiddenId).value = vals.join(',');
 }
 function chipsHtml(groupId, hiddenId, val) {
-  return WORK_VALS.map(v =>
-    `<button class="chip${val===v?' active-'+v:''}" data-val="${v}" onclick="selectChip(this,'${groupId}','${hiddenId}')">${LABELS[v]}</button>`
-  ).join('');
+  const vals = typeof val === 'string' ? val.split(',') : (val || ['wrote']);
+  return WORK_VALS.map(v => {
+    const active = vals.includes(v) ? ` active-${v}` : '';
+    return `<button class="chip${active}" data-val="${v}" onclick="toggleChip(this,'${groupId}','${hiddenId}')">${LABELS[v]}</button>`;
+  }).join('');
 }
 
 // ── Date preview ──
@@ -679,7 +705,7 @@ function renderEntries() {
             <button class="entry-btn edit" onclick="startEdit(${e.id})">✎</button>
           </div>
           <div class="entry-head">
-            <span class="badge badge-${e.work}">${LABELS[e.work]}</span>
+            <span class="badge badge-${(e.work||'wrote').split(',')[0]}">${(e.work||'wrote').split(',').map(w=>LABELS[w]||w).join(' · ')}</span>
             <span class="entry-date-sm">${dateDisplay(e)}</span>
           </div>
           <div class="entry-subtype">${e.type}</div>
@@ -710,7 +736,14 @@ function renderTomes() {
       <div class="tome-card-num">${fmt(t.chars)||'<span class="tome-dash">—</span>'}</div>
       ${t.words?`<div class="tome-card-words">${fmt(t.words)}\u00a0слов</div>`:''}
       ${t.chars?`<div class="tome-card-words" style="margin-top:2px;opacity:0.7;">${(t.chars/40000).toFixed(2)}\u00a0а.л.</div>`:''}
-    </div>`).join('');
+    </div>`).join('') + `
+    <div class="tome-card tome-concepts" id="tomeCardConcepts">
+      <button class="tome-edit-btn" onclick="startEditConcepts()">ред.</button>
+      <div class="tome-card-label" style="color:#9a90b0;">Концепты</div>
+      <div class="tome-card-num">${fmt(concepts.chars)||'<span class="tome-dash">—</span>'}</div>
+      ${concepts.words?`<div class="tome-card-words">${fmt(concepts.words)}\u00a0слов</div>`:''}
+      ${concepts.chars?`<div class="tome-card-words" style="margin-top:2px;opacity:0.7;">${(concepts.chars/40000).toFixed(2)}\u00a0а.л.</div>`:''}
+    </div>`;
 }
 
 function startEditTome(i) {
@@ -726,6 +759,24 @@ function startEditTome(i) {
     </div>`;
 }
 
+function startEditConcepts() {
+  document.getElementById('tomeCardConcepts').innerHTML = `
+    <div class="tome-card-label" style="color:#9a90b0;">Концепты</div>
+    <div class="tome-input-form">
+      <div class="tome-input-row">
+        <div><label style="margin-bottom:3px;">символов</label><input id="cc" type="number" value="${concepts.chars||''}" placeholder="0"></div>
+        <div><label style="margin-bottom:3px;">слов</label><input id="cw" type="number" value="${concepts.words||''}" placeholder="0"></div>
+      </div>
+      <button class="tome-save-btn" onclick="saveConcepts()">Сохранить</button>
+    </div>`;
+}
+function saveConcepts() {
+  concepts.chars = parseInt(document.getElementById('cc').value)||0;
+  concepts.words = parseInt(document.getElementById('cw').value)||0;
+  store.saveConcepts(concepts);
+  renderTomes();
+}
+
 function saveTome(i) {
   tomes[i].chars = parseInt(document.getElementById(`tc${i}`).value)||0;
   tomes[i].words = parseInt(document.getElementById(`tw${i}`).value)||0;
@@ -735,7 +786,7 @@ function saveTome(i) {
 
 // ── Backup ──
 function exportBackup() {
-  const data = { entries, tomes, exported: new Date().toISOString() };
+  const data = { entries, tomes, concepts, exported: new Date().toISOString() };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
@@ -750,9 +801,10 @@ function importBackup(e) {
     try {
       const data = JSON.parse(ev.target.result);
       if (!data.entries || !data.tomes) throw new Error();
-      entries = data.entries.map(migrateEntry);
-      tomes   = data.tomes;
-      store.save(entries); store.saveTomes(tomes);
+      entries  = data.entries.map(migrateEntry);
+      tomes    = data.tomes;
+      if (data.concepts) concepts = data.concepts;
+      store.save(entries); store.saveTomes(tomes); store.saveConcepts(concepts);
       render(); renderTomes();
       showBackupMsg(`Загружено: ${entries.length} касаний`);
     } catch { showBackupMsg('Ошибка — файл не распознан'); }
@@ -768,9 +820,10 @@ function showBackupMsg(text) {
 }
 
 // ── Init ──
-Promise.all([store.load(), store.loadTomes()]).then(([ed, td]) => {
+Promise.all([store.load(), store.loadTomes(), store.loadConcepts()]).then(([ed, td, cd]) => {
   entries = ed.map(migrateEntry);
   if (td) tomes = td;
+  if (cd) concepts = cd;
   render();
 });
 </script>
