@@ -225,7 +225,7 @@ textarea { resize: none; height: 68px; font-size: 14px; line-height: 1.55; }
 .tome-4 { background: rgba(210, 90, 90,0.10); border-color: rgba(210, 90, 90,0.22); }
 .tome-5 { background: rgba(165, 90,190,0.10); border-color: rgba(165, 90,190,0.22); }
 .tome-6 { background: rgba(130,130,140,0.10); border-color: rgba(130,130,140,0.22); }
-.tome-7 { background: rgba(165,165, 90,0.10); border-color: rgba(165,165, 90,0.22); }
+.tome-7 { background: rgba( 70,185,170,0.10); border-color: rgba( 70,185,170,0.22); }
 .tome-concepts { background: rgba(140,120,160,0.08); border-color: rgba(140,120,160,0.18); }
 .tome-card-label { font-size: 11px; font-weight: 300; letter-spacing: 0.07em; color: #9090a8; margin-bottom: 8px; }
 .tome-card-num { font-family: 'Jost', sans-serif; font-size: 22px; font-weight: 300; color: #ede8df; font-variant-numeric: tabular-nums; line-height: 1; }
@@ -453,6 +453,7 @@ const WORK_VALS  = ['wrote','finished','structured','moved','edited','thought','
 const MONTHS_GEN = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
 const MONTHS_NOM = ['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
 const TOME_NAMES = ['I','II','III','IV','V','VI','VII'];
+const TOME_ABBR  = ['ПЛ','ДИ','ОВ','ПИ','АМ','МГ','ЭК'];
 const TYPE_OPTS  = ['Том','Пакт','Манифест','Лирика','Интермеццо','Каприччио','Концепт','Другое'];
 
 let concepts = { chars: 0, words: 0 };
@@ -903,7 +904,7 @@ function renderTomes() {
   document.getElementById('tomeGrid').innerHTML = tomes.map((t,i) => `
     <div class="tome-card tome-${i+1}" id="tomeCard${i}">
       <button class="tome-edit-btn" onclick="startEditTome(${i})">ред.</button>
-      <div class="tome-card-label">Том ${t.num}</div>
+      <div class="tome-card-label">Том ${t.num} <span style="opacity:0.6;letter-spacing:0.04em;">${TOME_ABBR[i]}</span></div>
       <div class="tome-card-num">${fmt(t.chars)||'<span class="tome-dash">—</span>'}</div>
       ${t.words?`<div class="tome-card-words">${fmt(t.words)}\u00a0слов</div>`:''}
       ${t.chars?`<div class="tome-card-words" style="margin-top:2px;opacity:0.7;">${(t.chars/40000).toFixed(2)}\u00a0а.л.</div>`:''}
@@ -920,7 +921,7 @@ function renderTomes() {
 function startEditTome(i) {
   const t = tomes[i];
   document.getElementById(`tomeCard${i}`).innerHTML = `
-    <div class="tome-card-label">Том ${t.num}</div>
+    <div class="tome-card-label">Том ${t.num} <span style="opacity:0.6;letter-spacing:0.04em;">${TOME_ABBR[i]}</span></div>
     <div class="tome-input-form">
       <div class="tome-input-row">
         <div><label style="margin-bottom:3px;">символов</label><input id="tc${i}" type="number" value="${t.chars||''}" placeholder="0"></div>
